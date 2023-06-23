@@ -1,5 +1,6 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
 
 const monedas = ref([
   { codigo: 'USD', texto: 'Dolar de Estados unidos' },
@@ -7,6 +8,15 @@ const monedas = ref([
   { codigo: 'EUR', texto: 'Euro' },
   { codigo: 'GBP', texto: 'Libra Esterlina' },
 ]);
+const criptomonedas = ref([])
+onMounted(async () => {
+  criptomonedas.value = (
+    await axios.get(
+      'https://min-api.cryptocompare.com/data/top/mktcapfull?limit=10&tsym=USD',
+    )
+  ).data.Data;
+console.log(criptomonedas.value)
+});
 </script>
 
 <template>
@@ -22,9 +32,7 @@ const monedas = ref([
           <label for="moneda">Moneda:</label>
           <select id="moneda">
             <option value="">-- Selecciona --</option>
-            <option 
-              v-for="moneda in monedas" 
-              :value="moneda.codigo">
+            <option v-for="moneda in monedas" :value="moneda.codigo">
               {{ moneda.texto }}
             </option>
           </select>
