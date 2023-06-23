@@ -1,64 +1,32 @@
 <script setup>
-import { ref, onMounted, reactive, computed } from 'vue';
-import axios from 'axios';
+import { ref, reactive } from 'vue';
 import Alerta from './components/Alerta.vue';
 import Spinner from './components/Spinner.vue';
+import useCripto from './composables/useCripto';
 
-const monedas = ref([
-  { codigo: 'USD', texto: 'Dolar de Estados unidos' },
-  { codigo: 'COL', texto: 'Peso Colombiano' },
-  { codigo: 'EUR', texto: 'Euro' },
-  { codigo: 'GBP', texto: 'Libra Esterlina' },
-]);
-const criptomonedas = ref([]);
-const error = ref('');
+const {
+  monedas,
+  criptomonedas,
+  cotizacion,
+  cargando,
+  obtenerCotizacion,
+  mostrarResultado,
+} = useCripto();
+
 //usamos reactive cuando es un objeto que conocemos las llaves y que no sean muchas y las podemos poner en el obj
 const cotizar = reactive({
   moneda: '',
   criptomoneda: '',
 });
-//usamos ref para un obj cuando no conocemos las llaves o son muchas
-const cotizacion = ref({});
-const cargando = ref(false);
-onMounted(async () => {
-  criptomonedas.value = (
-    await axios.get(
-      'https://min-api.cryptocompare.com/data/top/mktcapfull?limit=20&tsym=USD',
-    )
-  ).data.Data;
-});
-
+const error = ref('');
 const cotizarCripto = () => {
-  const obtenerCotizacion = async () => {
-    cargando.value = true;
-    cotizacion.value = {};
-    try {
-      const { moneda, criptomoneda } = cotizar;
-      const url = (
-        await axios.get(
-          `https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${criptomoneda}&tsyms=${moneda}`,
-        )
-      ).data.DISPLAY[criptomoneda][moneda];
-      //con la sintaxis del la linea 40 puedo itinerar el objeto pasando variables
-      cotizacion.value = url;
-    } catch (error) {
-      aler(error);
-    } finally {
-      cargando.value = false;
-    }
-  };
-
   Object.values(cotizar).includes('')
     ? (error.value = 'Todos los campos son requeridos')
-    : obtenerCotizacion();
+    : obtenerCotizacion(cotizar);
   setTimeout(() => {
     error.value = '';
   }, 1000);
 };
-
-const mostrarResultado = computed(() => {
-  return Object.values(cotizacion.value).length > 0;
-});
 </script>
 
 <template>
